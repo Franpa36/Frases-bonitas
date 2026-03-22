@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ecos de Papel</title>
+    <title>Ecos de Bosque - Frases</title>
     <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;1,400&family=Pinyon+Script&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
-            --verde-profundo: #0d1a15;
-            --verde-bosque: #1b2e26;
-            --oro-viejo: #a3c1ad; /* Un verde musgo pálido elegante */
-            --crema: #e0f2f1;
+            --verde-negro: #0a1410;
+            --verde-bosque: #162921;
+            --musgo-luz: #a3c1ad;
+            --crema-seda: #f0f7f4;
         }
 
         body {
-            background-color: var(--verde-profundo);
-            background-image: radial-gradient(circle, var(--verde-bosque) 0%, var(--verde-profundo) 100%);
-            color: var(--crema);
+            background-color: var(--verde-negro);
+            background-image: radial-gradient(circle at center, var(--verde-bosque) 0%, var(--verde-negro) 100%);
+            color: var(--crema-seda);
             margin: 0;
             min-height: 100vh;
             display: flex;
@@ -25,45 +25,48 @@
             justify-content: center;
             align-items: center;
             font-family: 'Lora', serif;
-            overflow-x: hidden;
+            overflow: hidden;
         }
 
-        #capture-area {
-            padding: 60px;
-            max-width: 750px;
+        /* Área de Captura */
+        #canvas-area {
+            padding: 60px 40px;
+            max-width: 800px;
             text-align: center;
-            transition: all 0.6s ease;
+            transition: opacity 0.6s ease, transform 0.6s ease;
             background: transparent;
         }
 
         .phrase {
             font-family: 'Pinyon Script', cursive;
-            font-size: clamp(2.5rem, 6vw, 4rem);
-            color: var(--oro-viejo);
+            font-size: clamp(2.2rem, 5vw, 3.8rem);
+            color: var(--musgo-luz);
             margin: 0;
+            line-height: 1.4;
             font-style: italic;
-            line-height: 1.3;
+            text-wrap: balance;
         }
 
         .author {
-            font-size: 1.1rem;
-            margin-top: 25px;
-            letter-spacing: 3px;
+            font-size: 1rem;
+            margin-top: 30px;
+            letter-spacing: 4px;
             text-transform: uppercase;
-            opacity: 0.7;
+            color: var(--musgo-luz);
+            opacity: 0.8;
         }
 
-        .line {
+        .divider {
             border: 0;
             height: 1px;
-            background: linear-gradient(to right, transparent, var(--oro-viejo), transparent);
+            background: linear-gradient(to right, transparent, var(--musgo-luz), transparent);
             margin: 40px auto;
-            width: 50%;
+            width: 40%;
         }
 
         /* Botones */
-        .controls {
-            margin-top: 30px;
+        .ui-controls {
+            margin-top: 40px;
             display: flex;
             gap: 15px;
             flex-wrap: wrap;
@@ -71,122 +74,120 @@
         }
 
         button {
-            background: rgba(163, 193, 173, 0.1);
-            border: 1px solid var(--oro-viejo);
-            color: var(--oro-viejo);
-            padding: 10px 20px;
+            background: rgba(163, 193, 173, 0.05);
+            border: 1px solid var(--musgo-luz);
+            color: var(--musgo-luz);
+            padding: 12px 24px;
             cursor: pointer;
             font-family: 'Lora', serif;
             text-transform: uppercase;
             letter-spacing: 2px;
-            font-size: 0.7rem;
-            transition: 0.3s;
+            font-size: 0.75rem;
+            transition: all 0.4s ease;
         }
 
         button:hover {
-            background: var(--oro-viejo);
-            color: var(--verde-profundo);
+            background: var(--musgo-luz);
+            color: var(--verde-negro);
+            box-shadow: 0 0 20px rgba(163, 193, 173, 0.2);
         }
 
-        .ai-btn {
-            border-style: dashed;
-            font-weight: bold;
+        .ai-magic {
+            border-style: double;
+            border-width: 3px;
         }
 
-        /* Modo Descarga */
-        .download-mode {
+        /* Modo Descarga (Blanco y Negro) */
+        .export-style {
             background: white !important;
             color: black !important;
         }
-        .download-mode .phrase, .download-mode .author { color: black !important; }
-        .download-mode .line { background: black !important; }
+        .export-style .phrase, .export-style .author { color: black !important; opacity: 1; }
+        .export-style .divider { background: black !important; }
 
-        /* Animación de carga IA */
-        .generating {
-            filter: blur(5px);
-            opacity: 0.5;
-        }
+        .fade-out { opacity: 0; transform: translateY(10px); }
     </style>
 </head>
 <body>
 
-    <div id="capture-area">
-        <p class="phrase" id="text-phrase">...</p>
-        <hr class="line">
-        <p class="author" id="text-author"></p>
+    <div id="canvas-area">
+        <p class="phrase" id="display-p">...</p>
+        <hr class="divider">
+        <p class="author" id="display-a"></p>
     </div>
 
-    <div class="controls">
-        <button onclick="nextPhrase()">Siguiente Frase</button>
-        <button class="ai-btn" onclick="generateAI()">Crear con IA</button>
-        <button onclick="download()">Guardar Imagen</button>
+    <div class="ui-controls">
+        <button onclick="showNext()">Siguiente Susurro</button>
+        <button class="ai-magic" onclick="generateAI()">Inspiración IA</button>
+        <button onclick="saveImage()">Descargar JPG</button>
     </div>
 
     <script>
-        const database = [
+        const library = [
             { p: "Ellos eran dos piezas que encajaban a la perfección, pero no eran del mismo rompecabezas.", a: "Mario Benedetti" },
             { p: "Si te caes, te levanto y, si no puedo, me tumbo a tu lado.", a: "Julio Cortázar" },
             { p: "Siempre estoy en mi mundo porque no quiero estar en este.", a: "David Sant" },
             { p: "Podría decirte tantas cosas... Pero si te fijas en la forma en la que te miro, ya deberías saberlo todo.", a: "Anónimo" },
-            { p: "Hay ausencias que triunfan y presencias que terminan por matarnos.", a: "Julio Cortázar" },
-            { p: "Ojalá que cuando quieras, todavía yo quiera.", a: "Anónimo" },
-            { p: "Para que nada nos separe, que nada nos una.", a: "Pablo Neruda" },
-            { p: "A veces el mundo se nos queda pequeño para el tamaño de nuestros silencios.", a: "David Sant" }
+            { p: "Ven a dormir conmigo: no haremos el amor, él nos hará.", a: "Julio Cortázar" },
+            { p: "Escribir es como mostrar una herida que todavía no ha cerrado.", a: "Alejandra Pizarnik" },
+            { p: "Amo como ama el amor. No conozco otra razón para amar que amarte.", a: "Fernando Pessoa" },
+            { p: "Hay besos que en los labios dejan huellas de un campo soleado y de un amor herido.", a: "Gabriela Mistral" },
+            { p: "Te quiero como para leerte cada noche, como mi libro favorito.", a: "Mario Benedetti" },
+            { p: "Qué va a ser de ti lejos de casa, nena, qué va a ser de ti.", a: "Joaquín Sabina" },
+            { p: "Aprendí que el coraje no era la ausencia de miedo, sino el triunfo sobre él.", a: "Nelson Mandela" },
+            { p: "Me estás enseñando a amar, yo no sabía. Amar es no pedir, es dar.", a: "Gerardo Diego" },
+            { p: "Si me olvidas, búscame en el viento, que allí estaré susurrando tu nombre.", a: "Pablo Neruda" },
+            { p: "La memoria del corazón elimina los malos recuerdos y magnifica los buenos.", a: "Gabriel García Márquez" },
+            { p: "No hay nada más poético que una persona que sabe que se va a romper y aun así sonríe.", a: "Elvira Sastre" },
+            { p: "Fuimos eso que no se cuenta, ni se admite, pero que nunca se olvida.", a: "Anónimo" }
         ];
 
-        // Elementos para el Generador de IA (Simulado)
-        const sujetos = ["Tu silencio", "El tiempo", "Nuestro recuerdo", "La soledad", "El destino", "Tu mirada"];
-        const verbos = ["es un puente que", "es la única herida que", "dibuja sombras donde", "es el eco de lo que", "es un laberinto donde"];
-        const finales = ["nunca termina de arder.", "nadie se atreve a caminar.", "el olvido no llega.", "las almas se reconocen.", "todavía te espero."];
+        // Lógica de IA (Fragmentos poéticos)
+        const s = ["Tu recuerdo", "La soledad", "El olvido", "Tu boca", "El invierno", "Ese silencio"];
+        const v = ["es un incendio que", "es el único mapa que", "es un verso que", "es la lluvia que", "es el puente que"];
+        const f = ["muere en mis manos.", "no sabe hacia dónde ir.", "acaricia mi herida.", "nunca deja de doler.", "nos une en la distancia."];
 
-        let history = [];
+        let deck = [];
 
-        function nextPhrase() {
-            if (history.length === database.length) history = [];
-            let filtered = database.filter(item => !history.includes(item.p));
-            let item = filtered[Math.floor(Math.random() * filtered.length)];
-            
-            history.push(item.p);
-            display(item.p, item.a);
+        function shuffleDeck() {
+            deck = [...library].sort(() => Math.random() - 0.5);
+        }
+
+        function showNext() {
+            if (deck.length === 0) shuffleDeck();
+            const item = deck.pop();
+            render(item.p, item.a);
         }
 
         function generateAI() {
-            const area = document.getElementById('capture-area');
-            area.classList.add('generating');
-
-            setTimeout(() => {
-                const s = sujetos[Math.floor(Math.random() * sujetos.length)];
-                const v = verbos[Math.floor(Math.random() * verbos.length)];
-                const f = finales[Math.floor(Math.random() * finales.length)];
-                
-                display(`${s} ${v} ${f}`, "Pensamiento IA");
-                area.classList.remove('generating');
-            }, 800);
+            const res = `${s[Math.floor(Math.random()*s.length)]} ${v[Math.floor(Math.random()*v.length)]} ${f[Math.floor(Math.random()*f.length)]}`;
+            render(res, "IA Generativa");
         }
 
-        function display(phrase, author) {
-            document.getElementById('text-phrase').style.opacity = 0;
+        function render(p, a) {
+            const area = document.getElementById('canvas-area');
+            area.classList.add('fade-out');
             setTimeout(() => {
-                document.getElementById('text-phrase').innerText = phrase;
-                document.getElementById('text-author').innerText = author;
-                document.getElementById('text-phrase').style.opacity = 1;
-            }, 400);
+                document.getElementById('display-p').innerText = p;
+                document.getElementById('display-a').innerText = a;
+                area.classList.remove('fade-out');
+            }, 500);
         }
 
-        function download() {
-            const area = document.getElementById('capture-area');
-            area.classList.add('download-mode');
+        function saveImage() {
+            const area = document.getElementById('canvas-area');
+            area.classList.add('export-style');
 
             html2canvas(area, { backgroundColor: "#ffffff", scale: 3 }).then(canvas => {
                 const link = document.createElement('a');
-                link.download = `Frase-${new Date().getTime()}.png`;
-                link.href = canvas.toDataURL();
+                link.download = `Frase-${Date.now()}.jpg`;
+                link.href = canvas.toDataURL("image/jpeg");
                 link.click();
-                area.classList.remove('download-mode');
+                area.classList.remove('export-style');
             });
         }
 
-        window.onload = nextPhrase;
+        window.onload = showNext;
     </script>
 </body>
 </html>
