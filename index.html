@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ecos de Papel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;1,400&family=Pinyon+Script&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --verde-profundo: #0d1a15;
+            --verde-bosque: #1b2e26;
+            --oro-viejo: #a3c1ad; /* Un verde musgo pálido elegante */
+            --crema: #e0f2f1;
+        }
+
+        body {
+            background-color: var(--verde-profundo);
+            background-image: radial-gradient(circle, var(--verde-bosque) 0%, var(--verde-profundo) 100%);
+            color: var(--crema);
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Lora', serif;
+            overflow-x: hidden;
+        }
+
+        #capture-area {
+            padding: 60px;
+            max-width: 750px;
+            text-align: center;
+            transition: all 0.6s ease;
+            background: transparent;
+        }
+
+        .phrase {
+            font-family: 'Pinyon Script', cursive;
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            color: var(--oro-viejo);
+            margin: 0;
+            font-style: italic;
+            line-height: 1.3;
+        }
+
+        .author {
+            font-size: 1.1rem;
+            margin-top: 25px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            opacity: 0.7;
+        }
+
+        .line {
+            border: 0;
+            height: 1px;
+            background: linear-gradient(to right, transparent, var(--oro-viejo), transparent);
+            margin: 40px auto;
+            width: 50%;
+        }
+
+        /* Botones */
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        button {
+            background: rgba(163, 193, 173, 0.1);
+            border: 1px solid var(--oro-viejo);
+            color: var(--oro-viejo);
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: 'Lora', serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 0.7rem;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: var(--oro-viejo);
+            color: var(--verde-profundo);
+        }
+
+        .ai-btn {
+            border-style: dashed;
+            font-weight: bold;
+        }
+
+        /* Modo Descarga */
+        .download-mode {
+            background: white !important;
+            color: black !important;
+        }
+        .download-mode .phrase, .download-mode .author { color: black !important; }
+        .download-mode .line { background: black !important; }
+
+        /* Animación de carga IA */
+        .generating {
+            filter: blur(5px);
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="capture-area">
+        <p class="phrase" id="text-phrase">...</p>
+        <hr class="line">
+        <p class="author" id="text-author"></p>
+    </div>
+
+    <div class="controls">
+        <button onclick="nextPhrase()">Siguiente Frase</button>
+        <button class="ai-btn" onclick="generateAI()">Crear con IA</button>
+        <button onclick="download()">Guardar Imagen</button>
+    </div>
+
+    <script>
+        const database = [
+            { p: "Ellos eran dos piezas que encajaban a la perfección, pero no eran del mismo rompecabezas.", a: "Mario Benedetti" },
+            { p: "Si te caes, te levanto y, si no puedo, me tumbo a tu lado.", a: "Julio Cortázar" },
+            { p: "Siempre estoy en mi mundo porque no quiero estar en este.", a: "David Sant" },
+            { p: "Podría decirte tantas cosas... Pero si te fijas en la forma en la que te miro, ya deberías saberlo todo.", a: "Anónimo" },
+            { p: "Hay ausencias que triunfan y presencias que terminan por matarnos.", a: "Julio Cortázar" },
+            { p: "Ojalá que cuando quieras, todavía yo quiera.", a: "Anónimo" },
+            { p: "Para que nada nos separe, que nada nos una.", a: "Pablo Neruda" },
+            { p: "A veces el mundo se nos queda pequeño para el tamaño de nuestros silencios.", a: "David Sant" }
+        ];
+
+        // Elementos para el Generador de IA (Simulado)
+        const sujetos = ["Tu silencio", "El tiempo", "Nuestro recuerdo", "La soledad", "El destino", "Tu mirada"];
+        const verbos = ["es un puente que", "es la única herida que", "dibuja sombras donde", "es el eco de lo que", "es un laberinto donde"];
+        const finales = ["nunca termina de arder.", "nadie se atreve a caminar.", "el olvido no llega.", "las almas se reconocen.", "todavía te espero."];
+
+        let history = [];
+
+        function nextPhrase() {
+            if (history.length === database.length) history = [];
+            let filtered = database.filter(item => !history.includes(item.p));
+            let item = filtered[Math.floor(Math.random() * filtered.length)];
+            
+            history.push(item.p);
+            display(item.p, item.a);
+        }
+
+        function generateAI() {
+            const area = document.getElementById('capture-area');
+            area.classList.add('generating');
+
+            setTimeout(() => {
+                const s = sujetos[Math.floor(Math.random() * sujetos.length)];
+                const v = verbos[Math.floor(Math.random() * verbos.length)];
+                const f = finales[Math.floor(Math.random() * finales.length)];
+                
+                display(`${s} ${v} ${f}`, "Pensamiento IA");
+                area.classList.remove('generating');
+            }, 800);
+        }
+
+        function display(phrase, author) {
+            document.getElementById('text-phrase').style.opacity = 0;
+            setTimeout(() => {
+                document.getElementById('text-phrase').innerText = phrase;
+                document.getElementById('text-author').innerText = author;
+                document.getElementById('text-phrase').style.opacity = 1;
+            }, 400);
+        }
+
+        function download() {
+            const area = document.getElementById('capture-area');
+            area.classList.add('download-mode');
+
+            html2canvas(area, { backgroundColor: "#ffffff", scale: 3 }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `Frase-${new Date().getTime()}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+                area.classList.remove('download-mode');
+            });
+        }
+
+        window.onload = nextPhrase;
+    </script>
+</body>
+</html>
